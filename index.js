@@ -21,20 +21,17 @@ app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-// A GET request to the url `/foo` should respond with an HTTP response with:
-//   - content type "text/plain"
-//   - status 200
-//   - content that contains the string "woot"
-app.get('/foo', function (req, res) {
+// A GET request to ''/robots.txt' produces a HTTP 200 response with Content-Type 'text/plain; charset=utf-8'"
+app.get('/robots.txt', function (req, res) {
   res.set({
-    'Content-Type': 'text/plain'
+    'Content-Type': 'text/plain; charset=utf-8'
   });
   res.status(200).send('woot this works');
 });
 
-// A GET request to `/mrw/semester-ends.gif` should 302 redirect to `https://i.imgur.com/pXjrQ.gif`
-app.get('/mrw/semester-ends.gif', function (req, res) {
-  res.redirect('https://i.imgur.com/pXjrQ.gif');
+// A GET request to '/mrw/class-is-done.gif' 301 or 302 redirects to the "I have class and you don't" gif
+app.get('/mrw/class-is-done.gif', function (req, res) {
+  res.redirect('http://s68.photobucket.com/user/marchtrpt4bhs/media/GIFs/tumblr_lj93cdZpDJ1qafcveo1_500.gif.html');
 });
 
 // show chats
@@ -49,12 +46,12 @@ function loadChats(req, res, next) {
   });
 }
 
-// A GET request to `/` should respond with status 200 and content-type text/html
+// A GET request to '/' produces an HTTP 200 response with content 'Hello World!' somewhere
 app.get('/', loadChats, function (req, res) {
   res.set({
     'Content-Type': 'text/html'
   });
-  res.status(200).render('index');
+  res.status(200).send('Hello World!');
 });
 
 // Submitting the form should create a chat and "reload" the current page
