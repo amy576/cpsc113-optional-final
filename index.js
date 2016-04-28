@@ -9,8 +9,7 @@ var session = require('express-session');
 mongoose.connect(process.env.MONGO_URL);
 
 var MongoDBStore = require('connect-mongodb-session')(session);
-var Users = require('./models/users.js'); // models usually have uppercase variables
-var Tasks = require('./models/tasks.js');
+var Chats = require('./models/chats.js'); // models usually have uppercase variables
 
 // configure the app
 var store = new MongoDBStore({ 
@@ -22,191 +21,52 @@ app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
-// checking if there is a session for this cookie
-app.use(session({
-  secret: process.env.SESSION_SECRET, // do not want this in version control
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: 'auto' },
-  store: store
-})); // middleware for cookie signing
-
-// look up the user information in the database
-app.use(function(req, res, next){
-  console.log('req.session = ', req.session);
-  if(req.session.userId){
-    Users.findById(req.session.userId, function(err, user){
-      if(!err) {
-        // if logged in, this will be whoever is logged in; if not logged in, this will not exist
-        res.locals.currentUser = user;
-      }
-      next();
-    });
-  }
-  else
-  {
-    next();
-  }
+// A GET request to the url `/foo` should respond with an HTTP response with:
+//   - content type "text/plain"
+//   - status 200
+//   - content that contains the string "woot"
+app.get('/foo', function (req, res) {
+  res.set({
+    'Content-Type': 'text/plain'
+  });
+  res.status(200).send('woot this works');
 });
 
-// check if anyone is logged in
-function isLoggedIn(req, res, next){
-  if(res.locals.currentUser){
-    next();
-  }
-  else {
-    res.sendStatus(403); // prohibited
-  }
-}
+// A GET request to `/mrw/semester-ends.gif` should 302 redirect to `https://i.imgur.com/pXjrQ.gif`
+app.get('/mrw/semester-ends.gif', function (req, res) {
+  res.redirect('https://i.imgur.com/pXjrQ.gif');
+});
 
-// show user's tasks
-function loadUserTasks(req, res, next) {
-  // terminate execution if no logged in user, because we want this on the homepage
-  if(!res.locals.currentUser){
-    return next();
-  }
-  
-  // find tasks where the user is an owner
-  Tasks.find({}).or([
-    {owner: res.locals.currentUser},
-    {collaborators: res.locals.currentUser.email}])
-    .exec(function(err, tasks){
+// show chats
+function loadChats(req, res, next) {
+// find all chats
+  Chats.find()
+    .exec(function(err, chats){
     if(!err){
-      res.locals.tasks = tasks;
+      res.locals.chats = chats;
     }
     next();
   });
 }
 
-// render homepage with user's tasks
-app.get('/', loadUserTasks, function (req, res) {
-  res.render('index');
-});
-
-// registration checks
-app.post('/user/register', function (req, res) {
-  if(req.body.password !== req.body.password_confirmation) {
-      return res.render('index', {errors: "Password and password confirmation do not match"});
-  }
-  var newUser = new Users();
-  newUser.hashed_password = req.body.password;
-  newUser.email = req.body.email;
-  newUser.name = req.body.fl_name;
-  newUser.save(function(err, user){
-    if(user && !err){
-      req.session.userId = user._id;
-      res.redirect('/');
-    }
-    var errors = "Error registering you.";
-    if(err){
-      if(err.errmsg && err.errmsg.match(/duplicate/)){
-        errors = 'Account with this email already exists!';
-      }
-      return res.render('index', {errors: errors});
-    }
+// A GET request to `/` should respond with status 200 and content-type text/html
+app.get('/', loadChats, function (req, res) {
+  res.set({
+    'Content-Type': 'text/html'
   });
+  res.status(200).render('index');
 });
 
-// log in capability
-app.post('/user/login', function (req, res) {
-  Users.findOne({email: req.body.email},
-  function(err, user){
-    if(err || !user){
-      res.send('Invalid email address');
-      return;
-    }
-    user.comparePassword(req.body.password,
-    function(err, isMatch){
-      if(err || !isMatch){
-        res.send('Invalid password');
-      }
-      else{
-        req.session.userId = user._id;
-        res.redirect('/');
-      }
-    });
-  });
-});
-
-// log out capability
-app.get('/user/logout', function(req, res){
-  req.session.destroy();
-  res.redirect('/');
-});
-
-// all the controllers and routes below this require the user to be logged in
-app.use(isLoggedIn);
-
-// create task capability
-app.post('/task/create', function(req, res){
-  var newTask = new Tasks();
-  newTask.owner = res.locals.currentUser._id;
-  newTask.title = req.body.title;
-  newTask.description = req.body.description;
-  newTask.isComplete = false;
-  newTask.collaborators = [req.body.collaborator1, req.body.collaborator2, req.body.collaborator3];
-  newTask.save(function(err, savedTask){
-    if(err || !savedTask){
-      res.send('Error saving task!');
+// Submitting the form should create a chat and "reload" the current page
+app.post('/chat/create', function(req, res){
+  var newChat = new Chats();
+  newChat.description = req.body.textarea;
+  newChat.save(function(err, savedChat){
+    if(err || !savedChat){
+      res.send('Error saving chat!');
     }
     else{
       res.redirect('/');
-    }
-  });
-});
-
-// mark task as complete
-app.get('/complete/:id', function(req, res){
-  Tasks.findByIdAndUpdate(req.params.id, {
-    $set: {
-      "isComplete" : true
-    }
-  }, function(err, toggletask){
-    if(err || !toggletask){
-      res.send('Error changing task completion status');
-    }
-    else{
-      res.redirect('/');
-    }
-  });
-});
-
-// mark task as incomplete
-app.get('/incomplete/:id', function(req, res){
-  Tasks.findByIdAndUpdate(req.params.id, {
-    $set: {
-      "isComplete" : false
-    }
-  }, function(err, toggletask){
-    if(err || !toggletask){
-      res.send('Error changing task completion status');
-    }
-    else{
-      res.redirect('/');
-    }
-  });
-});
-
-// delete task
-app.get('/delete/:id', function(req, res){
-  Tasks.findById(req.params.id, function(err, found){
-    if(err || !found){
-      res.send('There was a problem deleting that task');
-    }
-    else{
-      if(found.owner.toString() == req.session.userId.toString()){
-        Tasks.findByIdAndRemove(req.params.id, function(err, deleted){
-          if(err || !deleted){
-            res.send('There was a problem deleting that task');
-          }
-          else{
-            res.redirect('/');
-          }
-        });
-      }
-      else{
-        res.send('Sorry, you do not have permission to delete this task');
-      }
     }
   });
 });

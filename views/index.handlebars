@@ -1,77 +1,24 @@
-<h1>Social todo app for CPSC113</h1>
+{{!--- The page should have *valid* HTML5--}}
+  
+<h1>CPSC113 Chat</h1>
 
-{{#if errors}}
-<div style="color:red" class="validation-error">
-   {{errors}}
+{{!--- It should include a form with id="new-chat" and method='POST', a `textarea` input, and a submit button--}}
+<div>
+    <form id="new-chat" action="/chat/create" method="POST">
+        <label for="textarea">Say something:  </label>
+        <input name="textarea" type="text"><br>
+        <input type="submit" class="chat-submit"><br>
+    </form>
 </div>
-{{/if}}
-
-{{#if currentUser}}
-    <h2>Welcome, {{currentUser.name}}</h2>
-    <h4>Your Tasks</h4>
-    {{#if tasks}}
-        <fieldset class="tasks-list">
-            {{#each tasks}}
-            <div class="tasks-list-item">
-                
-                {{#if this.isComplete}}
-                    <span class="complete-task" class="task-title"><strike>{{this.title}}</strike></span>
-                    <form action="/incomplete/{{this._id}}" class="toggle-task" method="GET"><button type="submit" class="toggle-task" name="toggle-task">Mark as Incomplete</button></form>
-                    
-                {{else}}
-                    <span class="task-title">{{this.title}}</span>
-                    <form action="/complete/{{this._id}}" class="toggle-task" method="GET"><button type="submit" class="toggle-task" class="complete-task" name="toggle-task">Mark as Complete</button></form>
-                
-                {{/if}}
-                
-                <form action="/delete/{{this._id}}" class="delete-task" method="GET"><button type="submit" class="delete-task" name="delete-task">Delete Task</button></form>
-                
-            </div>
-            {{/each}}
-	    </fieldset>
-
-    {{else}}
-        No tasks to show!
-    {{/if}}
-    <hr>
-    <div>
-        <h4>Add a new task</h4>
-        <form action="/task/create\" method="POST" class="create-task">
-            <label for="title">Task title</label>
-            <input name="title" type="text"><br>
-            <label for="description">Task description</label>
-            <input name="description" type="text"><br>
-            Collaborators<br>
-            <input name="collaborator1" type="email"><br>
-            <input name="collaborator2" type="email"><br>
-            <input name="collaborator3" type="email"><br>
-            <input type="submit"><br>
-        </form>
-    </div>
+<br><br>
+{{!--- The page should show a list of submitted chats, each in an HTML element with class="chat"--}}
+{{#if chats}}
+    <fieldset class="chat">
+        {{#each chats}}
+        {{this.description}}<br><br>
+        {{/each}}
+    </fieldset>
 
 {{else}}
-
-<div>
-    <form class="login-form" action="/user/login" method="POST">
-        <label for="email">Email</label>
-        <input name="email" type="text"><br>
-        <label for="password">Password</label>
-        <input name="password" type="text"><br>
-        <input type="submit" class="log-in-submit"><br>
-    </form>
-</div>
-
-<div><hr></div>
-
-<div>
-    <form action="/user/register" method="post" class="signup-form" style="display: block;">
-      <input name="fl_name" type="text" class="text-input" placeholder="first &amp; last name">
-      <input name="email" type="email" class="text-input" placeholder="email">
-      <input name="password" type="password" class="text-input" placeholder="password">
-      <input name="password_confirmation" type="password" class="text-input" placeholder="password confirmation">
-      <div>
-        <button class="blue sign-up-submit">Sign Up</button>
-      </div>
-    </form>
-</div>
+    No chats to show!
 {{/if}}
