@@ -9,7 +9,7 @@ var session = require('express-session');
 mongoose.connect(process.env.MONGO_URL);
 
 var MongoDBStore = require('connect-mongodb-session')(session);
-var Chats = require('./models/chats.js'); // models usually have uppercase variables
+var Posts = require('./models/posts.js'); // models usually have uppercase variables
 
 // configure the app
 var store = new MongoDBStore({ 
@@ -35,9 +35,9 @@ app.get('/mrw/class-is-done.gif', function (req, res) {
 });
 
 // show chats
-function loadChats(req, res, next) {
+function loadPosts(req, res, next) {
 // find all chats
-  Chats.find()
+  Posts.find()
     .exec(function(err, chats){
     if(!err){
       res.locals.chats = chats;
@@ -47,23 +47,24 @@ function loadChats(req, res, next) {
 }
 
 // A GET request to '/' produces an HTTP 200 response with content 'Hello World!' somewhere
-app.get('/', loadChats, function (req, res) {
+app.get('/', loadPosts, function (req, res) {
   res.set({
     'Content-Type': 'text/html'
   });
   res.status(200).send('Hello World!');
 });
 
-// Submitting the form should create a chat and "reload" the current page
-app.post('/chat/create', function(req, res){
-  var newChat = new Chats();
-  newChat.description = req.body.textarea;
-  newChat.save(function(err, savedChat){
+//A POST request to '/posts/new' with form data containing a 'text' field creates a new post with id 0 and redirects to '/posts/0'
+app.post('/posts/new', function(req,res){
+  var newPost = new Posts();
+  newPost.description = req.body.text;
+  newPost.postid = Posts.count();
+  newPost.save(function(err,savedChat){
     if(err || !savedChat){
       res.send('Error saving chat!');
     }
     else{
-      res.redirect('/');
+      res.redirect('/posts/:id');
     }
   });
 });

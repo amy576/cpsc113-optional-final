@@ -1,16 +1,16 @@
 {{!--- The page should have *valid* HTML5--}}
   
-<h1>CPSC113 Chat</h1>
+<h1>CPSC113 Blog</h1>
 
-{{!--- It should include a form with id="new-chat" and method='POST', a `textarea` input, and a submit button--}}
 <div>
-    <form id="new-chat" action="/chat/create" method="POST">
-        <label for="textarea">Say something:  </label>
-        <input name="textarea" type="text"><br>
+    <form id="new-post" action="/posts/new" method="POST">
+        <label for="text">New Post:  </label>
+        <input name="text" type="text"><br>
         <input type="submit" class="chat-submit"><br>
     </form>
 </div>
 <br><br>
+
 {{!--- The page should show a list of submitted chats, each in an HTML element with class="chat"--}}
 {{#if chats}}
     <fieldset class="chat">

@@ -9,8 +9,9 @@ var descriptionField = {
     maxlength: 5000
 };
 
-var ChatSchema = new Schema({
+var PostSchema = new Schema({
+    postid: { type: Number, min: 0, max: 1000 }
     description: descriptionField
 });
 
-module.exports = mongoose.model('Chats', ChatSchema);
+module.exports = mongoose.model('Posts', PostSchema);
