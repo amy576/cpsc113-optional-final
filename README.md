@@ -1,16 +1,18 @@
-# CPSC113 Social todo app
+# CPSC113 Optional Exam
 
-This is my app. Hi Kyle and David I am so sorry this is so late.
-
-I tried my best to make everything match the selectors the tests were looking for, but the tests still didn't seem to recognize the selectors. (That being said, I also ran the tests against the example app, which failed 26 tests compared with the 13 failed tests that showed up for my app.
-
-I have, however, manually tested my app against the requirements, and everything seems to work (barring something breaking during deployment to Heroku).
+This is my app. It allows people to post blog posts and to view them afterwards.
 
 ## How to run this
-You can run the server with
+First, run
 
-    node index.js
+    mongod
 
-or, if you prefer and would like reloading automatically:
+Then, run the server with the MongoDB URL and the session ID. Enter the following:
 
-    nodemon index.js
+    MONGO_URL='mongodb://localhost:27017/final' SESSION_SECRET='foo123' nodemon ./index.js
+
+Lastly, run
+
+    mongo
+    
+to start the MongoDB shell and connect to the database. (This last step is not entirely necessary, but is helpful if you want to keep track of the changes.)
