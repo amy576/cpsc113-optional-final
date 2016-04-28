@@ -10,7 +10,7 @@ var descriptionField = {
 };
 
 var PostSchema = new Schema({
-    postid: { type: Number, min: 0, max: 1000 }
+    postid: { type: Number, min: 0, max: 1000 },
     description: descriptionField
 });
 
