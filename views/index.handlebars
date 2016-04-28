@@ -1,6 +1,6 @@
 {{!--- The page should have *valid* HTML5--}}
   
-<h1>CPSC113 Blog</h1>
+<h1>Hello World</h1>
 
 <div>
     <form id="new-post" action="/posts/new" method="POST">
@@ -11,14 +11,16 @@
 </div>
 <br><br>
 
-{{!--- The page should show a list of submitted chats, each in an HTML element with class="chat"--}}
-{{#if chats}}
-    <fieldset class="chat">
-        {{#each chats}}
-        {{this.description}}<br><br>
+{{#if posts}}
+    <fieldset class="posts-list">
+        {{#each posts}}
+        <div class="posts-list-item">
+            <form action="/posts/{{this.postid}}" class="view-post" method="GET"><button type="submit" class="view-post" name="view-post">View Post</button></form>
+        
+        </div>
         {{/each}}
     </fieldset>
 
 {{else}}
-    No chats to show!
+        No posts to show!
 {{/if}}

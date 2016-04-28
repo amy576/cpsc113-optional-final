@@ -34,24 +34,25 @@ app.get('/mrw/class-is-done.gif', function (req, res) {
   res.redirect('http://s68.photobucket.com/user/marchtrpt4bhs/media/GIFs/tumblr_lj93cdZpDJ1qafcveo1_500.gif.html');
 });
 
-// show chats
-function loadPosts(req, res, next) {
-// find all chats
-  Posts.find()
-    .exec(function(err, chats){
-    if(!err){
-      res.locals.chats = chats;
-    }
-    next();
-  });
-}
-
 // A GET request to '/' produces an HTTP 200 response with content 'Hello World!' somewhere
-app.get('/', loadPosts, function (req, res) {
+app.get('/', function (req, res) {
   res.set({
     'Content-Type': 'text/html'
   });
-  res.status(200).send('Hello World!');
+  res.status(200).redirect('/');
+});
+
+//A GET request to /posts/0 contains the post content that was submitted and status code 200
+app.post('/posts/:id', function(req,res){
+  Posts.find({postid: req.params.id}, function(err, found){
+    var post = Posts.find({postid: req.params.id});
+    if(err || !found){
+      res.status(404).send('There was a problem viewing that post');
+    }
+    else{
+      res.status(200).send(post.description);
+    }
+  });
 });
 
 //A POST request to '/posts/new' with form data containing a 'text' field creates a new post with id 0 and redirects to '/posts/0'
